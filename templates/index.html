@@ -1,0 +1,179 @@
+{% extends 'base.html' %} {% block body %}
+
+<!-- ! Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %} {% if messages
+%}
+<div id="flash-messages" class="space-y-4 mb-4">
+  {% for category, message in messages %} {% if category == 'success' %}
+  <div class="m-8 p-4 rounded-lg text-sm text-white bg-green-500 flash-message">
+    {{ message }}
+  </div>
+  {% elif category == 'error' %}
+  <div class="m-8 p-4 rounded-lg text-sm text-white bg-red-500 flash-message">
+    {{ message }}
+  </div>
+  {% elif category == 'info' %}
+  <div class="m-8 p-4 rounded-lg text-sm text-white bg-blue-500 flash-message">
+    {{ message }}
+  </div>
+  {% elif category == 'warning' %}
+  <div
+    class="m-8 p-4 rounded-lg text-sm text-black bg-yellow-400 flash-message"
+  >
+    {{ message }}
+  </div>
+  {% else %}
+  <div class="m-8 p-4 rounded-lg text-sm text-white bg-gray-500 flash-message">
+    {{ message }}
+  </div>
+  {% endif %} {% endfor %}
+</div>
+{% endif %} {% endwith %}
+
+<!-- ! Delete successfully -->
+<div
+  id="flash-message"
+  class="m-8 p-4 rounded-lg text-sm text-white bg-green-500 flash-message hidden shadow-md transition-opacity duration-300"
+>
+  <span id="flash-text"></span>
+</div>
+
+<form
+  class="my-7 max-w-2xl mx-auto"
+  action="{{url_for('update',sno=todo.sno) if update else url_for('index') }}"
+  method="POST"
+>
+  <div class="mb-5">
+    <label
+      for="title"
+      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+      >Your title</label
+    >
+    <input
+      type="text"
+      id="title"
+      value="{{ todo.title if update else '' }}"
+      name="title"
+      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+      placeholder="name@flowbite.com"
+      required
+    />
+  </div>
+  <div class="mb-5">
+    <label
+      for="description"
+      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+      >Your description</label
+    >
+    <input
+      type="text"
+      id="description"
+      value="{{ todo.desc if update else '' }}"
+      name="desc"
+      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+      required
+    />
+  </div>
+
+  <button
+    type="submit"
+    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+  >
+    {{ 'Update Todo' if update else 'Add Todo' }}
+  </button>
+</form>
+
+
+<form method="GET" action="{{ url_for('index') }}" class="text-center my-5" onchange="this.form.submit()">
+  <input
+    type="text"
+    name="search"
+    placeholder="Search..."
+    value="{{ request.args.get('search', '') }}"
+    class="p-2 border border-gray-300 rounded-lg text-sm"
+  />
+  <!-- <button
+    type="submit"
+    class="ml-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+  >
+    Search
+  </button> -->
+</form>
+
+
+<div class="flex justify-center align-center">
+
+  <form  action="{{ url_for('index') }}" method="GET">
+    <div class="relative inline-block w-full">
+      <select id="sort-select" name="sort_by" class="appearance-none block w-[220px] px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="this.form.submit()">
+        <option value="by_title" {% if request.args.get("sort_by") == 'by_title' %}selected{% endif %}>Title</option>
+        <option value="by_desc" {% if request.args.get('sort_by') == 'by_desc' %}selected{% endif %}>Description</option>
+        <option value="by_date" {% if request.args.get('sort_by') == 'by_date' %}selected{% endif %}>Date</option>
+      </select>
+      <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 9l4 4 4-4"></path>
+      </svg>
+    </div>
+  </form>
+</div>
+
+
+
+{% if allTodo|length > 0 %}
+<div id="display-elements">
+  <div class="m-6 relative overflow-x-auto shadow-md sm:rounded-lg">
+    <table
+      class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
+    >
+      <thead
+        class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-200"
+      >
+        <tr>
+          <th scope="col" class="px-6 py-3">Sno</th>
+          <th scope="col" class="px-6 py-3">Tite</th>
+          <th scope="col" class="px-6 py-3">Description</th>
+          <th scope="col" class="px-6 py-3">Date and Time</th>
+          <th scope="col" class="px-6 py-3">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for todo in allTodo %}
+        <tr
+          id="todo-{{ todo.sno }}"
+          class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200"
+        >
+          <th
+            scope="row"
+            class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+          >
+            {{todo.sno}}
+          </th>
+          <td class="px-6 py-4 dark:text-white">{{todo.title}}</td>
+          <td class="px-6 py-4 dark:text-white">{{todo.desc}}</td>
+          <td class="px-6 py-4 dark:text-white">{{todo.created_date}}</td>
+          <td class="px-6 py-4 dark:text-white">
+            <button
+              onclick="deleteTodo('{{ todo.sno }}')"
+              class="px-3 py-1 dark:text-white bg-red-300"
+            >
+              Delete
+            </button>
+
+            <a
+              href="/update/{{todo.sno}}"
+              class="px-3 py-1 dark:text-white bg-green-300"
+            >
+              Update
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% else %}
+<p class="text-center text-gray-500 dark:text-gray-400">No items found</p>
+
+{% endif %} {% endblock body %}
